@@ -1,12 +1,19 @@
 {
   "actorNames": [
-    "icons"
+    "icons",
+    "headerActors",
+    "headerMaterials",
+    "headerTextures",
+    "panelResources"
   ],
   "materialNames": [
-    "icons"
+    "icons",
+    "color_dark",
+    "color_panel"
   ],
   "textureNames": [
-    "icons"
+    "icons",
+    "default"
   ],
   "fontNames": null
 }
