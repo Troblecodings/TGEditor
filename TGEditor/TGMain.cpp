@@ -6,16 +6,22 @@
 #include <gamecontent/camera/2DCamera.hpp>
 #include <io/Resource.hpp>
 
+using namespace tge::io;
 using namespace tge::gmc;
 using namespace tge::tex;
+
+static TopDownCamera camera;
 
 int main() {
 	initEngine();
 
+	camera.positionx = 0;
+	camera.positiony = 0;
 	playercontroller = [](Input input) {};
 
-	Map map;
-	loadResourceFile("test.tgr", &map);
+	setTopDownCamera(camera);
+
+	loadResourceFile("Resources/TGEditor.tgr");
 
 	startTGEngine();
 	return 0;
