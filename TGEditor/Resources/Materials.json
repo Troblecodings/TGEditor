@@ -2,5 +2,32 @@
   "icons": {
     "color": null,
     "diffuseTexture": "icons"
+  },
+  "color_accent": {
+    "color": [
+      0.24705882,
+      0.7372549,
+      0.8901961,
+      1.0
+    ],
+    "diffuseTexture": "default"
+  },
+  "color_panel": {
+    "color": [
+      0.53333336,
+      0.53333336,
+      0.53333336,
+      1.0
+    ],
+    "diffuseTexture": "default"
+  },
+  "color_dark": {
+    "color": [
+      0.12156863,
+      0.12156863,
+      0.12156863,
+      1.0
+    ],
+    "diffuseTexture": "default"
   }
 }
