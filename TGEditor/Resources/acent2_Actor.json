@@ -1,9 +1,9 @@
 {
-  "name": "panelResources",
+  "name": "acent2",
   "localTransform": [
-    0.4, 0.0, 0.0, -1.0,
-    0.0, 1.95, 0.0, -0.95, 
-    0.0, 0.0, 0.8, 0.0,
+    0.005, 0.0, 0.0, -0.6,
+    0.0, 2.0, 0.0, -0.95, 
+    0.0, 0.0, 0.2, 0.0,
     0.0, 0.0, 0.0, 1.0
   ],
   "indices": [
@@ -32,7 +32,7 @@
     0.0,
     1.0
   ],
-  "materialName": "color_panel",
+  "materialName": "color_accent",
   "indexCount": 6,
   "vertexCount": 4,
   "layerId": 1

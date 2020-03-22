@@ -4,12 +4,15 @@
     "headerActors",
     "headerMaterials",
     "headerTextures",
-    "panelResources"
+    "panelResources",
+    "acent1",
+    "acent2"
   ],
   "materialNames": [
     "icons",
     "color_dark",
-    "color_panel"
+    "color_panel",
+    "color_accent"
   ],
   "textureNames": [
     "icons",
