@@ -18,5 +18,7 @@
     "icons",
     "default"
   ],
-  "fontNames": null
+  "fontNames": {
+    "Lato-Regular.ttf": 100.0
+  }
 }
