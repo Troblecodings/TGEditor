@@ -1,12 +1,9 @@
 {
   "actorNames": [
     "icons",
-    "headerActors",
-    "headerMaterials",
-    "headerTextures",
+    "header",
     "panelResources",
-    "accent1",
-    "accent2"
+    "accent"
   ],
   "materialNames": [
     "icons",
