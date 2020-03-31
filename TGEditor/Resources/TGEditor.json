@@ -1,15 +1,15 @@
 {
   "actorNames": [
-    "icons",
     "header",
     "panelResources",
-    "accent"
+    "accent",
+    "icons"
   ],
   "materialNames": [
-    "icons",
-    "color_dark",
     "color_panel",
-    "color_accent"
+    "color_dark",
+    "color_accent",
+    "icons"
   ],
   "textureNames": [
     "icons",
