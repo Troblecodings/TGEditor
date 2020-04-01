@@ -46,7 +46,8 @@ int main() {
 		tge::drw::genMatrix(-0.81f, -0.97f, -0.5f, 0.03f, 0.04f),
 		tge::drw::genMatrix(-0.70f, -0.97f, -0.5f, 0.03f, 0.04f)
 	};
-	tge::fnt::createStringActor(tge::fnt::fonts.data(), chars, 10, materials);
+	constexpr uint32_t size = sizeof(chars) / sizeof(*chars);
+	tge::fnt::createStringActor(tge::fnt::fonts.data(), chars, size, materials);
 
 	startTGEngine();
 
