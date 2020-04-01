@@ -24,21 +24,30 @@ int main() {
 
 	setTopDownCamera(camera);
 
-	shadertool::exec("map make TGEditor"); // Recompile before loading
+	int returncode = shadertool::exec("map make TGEditor"); // Recompile before loading
+	OUT_LV_DEBUG(returncode)
 	loadResourceFile("Resources/TGEditor.tgr");
 
-	const char* chars[] = { "TEXTURES", "MATERIALS", "ACTORS", "File", "Edit", "Project", "Settings"};
+	const char* chars[] = { "TEXTURES", "MATERIALS", "ACTORS", 
+	"Name", "Name", "Name",
+	"File", "Edit", "Project", "Settings"
+};
 	glm::mat4 materials[] = {
-		tge::drw::genMatrix(-0.97f, -0.85f, -0.5f, 0.08f, 0.08f),
-		tge::drw::genMatrix(-0.97f, -0.2f, -0.5f, 0.08f, 0.08f),
-		tge::drw::genMatrix(-0.97f, 0.5f, -0.5f, 0.08f, 0.08f),
+		tge::drw::genMatrix(-0.97f, -0.88f, -0.5f, 0.05f, 0.07f),
+		tge::drw::genMatrix(-0.97f, -0.23f, -0.5f, 0.05f, 0.07f),
+		tge::drw::genMatrix(-0.97f, 0.47f, -0.5f, 0.05f, 0.07f),
+
+		tge::drw::genMatrix(-0.97f, -0.795f, -0.5f, 0.025f, 0.04f),
+	    tge::drw::genMatrix(-0.97f, -0.145f, -0.5f, 0.025f, 0.04f),
+		tge::drw::genMatrix(-0.97f, 0.555f, -0.5f, 0.025f, 0.04f),
 
 		tge::drw::genMatrix(-0.95f, -0.97f, -0.5f, 0.03f, 0.04f),
 		tge::drw::genMatrix(-0.88f, -0.97f, -0.5f, 0.03f, 0.04f),
 		tge::drw::genMatrix(-0.81f, -0.97f, -0.5f, 0.03f, 0.04f),
 		tge::drw::genMatrix(-0.70f, -0.97f, -0.5f, 0.03f, 0.04f)
 	};
-	tge::fnt::createStringActor(tge::fnt::fonts.data(), chars, 7, materials);
+	constexpr uint32_t size = sizeof(chars) / sizeof(*chars);
+	tge::fnt::createStringActor(tge::fnt::fonts.data(), chars, size, materials);
 
 	startTGEngine();
 
