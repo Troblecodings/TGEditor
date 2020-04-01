@@ -1,4 +1,5 @@
 #include "TGMain.h"
+#include "ShaderTool.hpp"
 #include <TGEngine.hpp>
 #include <gamecontent/PlayerController.hpp>
 #include <gamecontent/Actor.hpp>
@@ -23,6 +24,7 @@ int main() {
 
 	setTopDownCamera(camera);
 
+	shadertool::exec("map make TGEditor"); // Recompile before loading
 	loadResourceFile("Resources/TGEditor.tgr");
 
 	const char* chars[] = { "TEXTURES", "MATERIALS", "ACTORS" };
@@ -34,5 +36,6 @@ int main() {
 	tge::fnt::createStringActor(tge::fnt::fonts.data(), chars, 3, materials);
 
 	startTGEngine();
+
 	return 0;
 }

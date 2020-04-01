@@ -18,9 +18,15 @@
     <ClCompile Include="TGMain.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="ShaderTool.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="TGMain.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="ShaderTool.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
