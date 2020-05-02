@@ -25,6 +25,8 @@ std::array<float, 784> uniformData {
 	0, 0, 0.1, 0,
 	0, 0, 0, 1
 };
+uint32_t currentSelectedActor = 0;
+std::vector<char*> actorNames;
 
 static void contoller(Input in) {}
 
