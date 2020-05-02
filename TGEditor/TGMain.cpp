@@ -8,25 +8,48 @@
 #include <io/Resource.hpp>
 #include <io/Font.hpp>
 #include <drawlib/Quad.hpp>
+#include <array>
+#include <pipeline/buffer/UniformBuffer.hpp>
 
 using namespace tge::io;
 using namespace tge::gmc;
 using namespace tge::tex;
+using namespace tge::buf;
 
 static TopDownCamera camera;
+
+bool flag = false;
+std::array<float, 784> uniformData {
+	1, 0, 0, 0,
+	0, 1, 0, 0,
+	0, 0, 0.1, 0,
+	0, 0, 0, 1
+};
+
+static void contoller(Input in) {}
 
 int main() {
 	initEngine();
 
+	playercontroller = contoller;
+
 	camera.positionx = 0;
 	camera.positiony = 0;
-	playercontroller = [](Input input) {};
 
-	setTopDownCamera(camera);
-
+#ifdef DEBUG
 	int returncode = shadertool::exec("map make TGEditor"); // Recompile before loading
 	OUT_LV_DEBUG(returncode)
+#endif // Only in debug mode
+
 	loadResourceFile("Resources/TGEditor.tgr");
+
+	for (size_t i = 16; i < 16 + 128 * 4; i += 4) {
+		uniformData[i + 2] = 1;
+		uniformData[i + 3] = 1;
+	}
+
+	fillUniformBuffer(TRANSFORM_BUFFER, uniformData.data(), uniformData.size() * sizeof(float));
+	fillUniformBuffer(TRANSFORM_BUFFER_2, uniformData.data(), uniformData.size() * sizeof(float));
 
 	const char* chars[] = { "TEXTURES", "MATERIALS", "ACTORS", 
 	"Name", "Name", "Name",

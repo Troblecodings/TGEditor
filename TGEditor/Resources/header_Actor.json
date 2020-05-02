@@ -1,18 +1,22 @@
 {
   "name": "header",
   "localTransform": [
-    1, 0.0, 0.0, 0,
-    0.0, 1, 0.0, 0, 
-    0.0, 0.0, 0.4, 0,
-    0.0, 0.0, 0.0, 1,
-
-    -1.0, -0.95, 0.5, 0.1,
-    -1.0, -0.3, 0.5, 0.1,
-    -1.0, 0.4, 0.5, 0.1,
-    -0.99, -0.83, 0.47, 0.05,
-    -0.99, -0.18, 0.47, 0.05,
-    -0.99,  0.52, 0.47, 0.05,
-    -1.0, -1.0, 3.0, 0.04
+    1.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    1.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.4,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    1.0
   ],
   "indices": [
     0,
@@ -43,5 +47,91 @@
   "materialName": "color_dark",
   "indexCount": 6,
   "vertexCount": 4,
-  "layerId": 3
+  "layerId": 3,
+  "instances": [
+    {
+      "name": "header0",
+      "matrix": [
+        -1.0,
+        -0.95,
+        0.5,
+        0.1
+      ],
+      "anchor": 0,
+      "relation": "",
+      "relationAnchor": 0
+    },
+    {
+      "name": "header1",
+      "matrix": [
+        -1.0,
+        -0.3,
+        0.5,
+        0.1
+      ],
+      "anchor": 0,
+      "relation": "",
+      "relationAnchor": 0
+    },
+    {
+      "name": "header2",
+      "matrix": [
+        -1.0,
+        0.4,
+        0.5,
+        0.1
+      ],
+      "anchor": 0,
+      "relation": "",
+      "relationAnchor": 0
+    },
+    {
+      "name": "header3",
+      "matrix": [
+        -0.99,
+        -0.83,
+        0.47,
+        0.05
+      ],
+      "anchor": 0,
+      "relation": "",
+      "relationAnchor": 0
+    },
+    {
+      "name": "header4",
+      "matrix": [
+        -0.99,
+        -0.18,
+        0.47,
+        0.05
+      ],
+      "anchor": 0,
+      "relation": "",
+      "relationAnchor": 0
+    },
+    {
+      "name": "header5",
+      "matrix": [
+        -0.99,
+        0.52,
+        0.47,
+        0.05
+      ],
+      "anchor": 0,
+      "relation": "",
+      "relationAnchor": 0
+    },
+    {
+      "name": "header6",
+      "matrix": [
+        -1.0,
+        -1.0,
+        3.0,
+        0.04
+      ],
+      "anchor": 0,
+      "relation": "",
+      "relationAnchor": 0
+    }
+  ]
 }
