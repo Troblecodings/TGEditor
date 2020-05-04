@@ -1,13 +1,10 @@
 {
   "name": "panelResources",
   "localTransform": [
-    1, 0.0, 0.0, 0.0,
-    0.0, 1, 0.0, 0.0, 
+    1.0, 0.0, 0.0, 0.0,
+    0.0, 1.0, 0.0, 0.0,
     0.0, 0.0, 0.9, 0.0,
-    0.0, 0.0, 0.0, 1,
-    
-    -1.0, -0.95, 0.5, 1.95,
-    0.6, -0.95, 0.5, 1.95
+    0.0, 0.0, 0.0, 1.0
   ],
   "indices": [
     0,
@@ -38,5 +35,31 @@
   "materialName": "color_panel",
   "indexCount": 6,
   "vertexCount": 4,
-  "layerId": 3
+  "layerId": 3,
+  "instances": [
+    {
+      "name": "leftPanel",
+      "matrix": [
+        -1.0,
+        -0.95,
+        0.5,
+        1.95
+      ],
+      "anchor": 0,
+      "relation": "",
+      "relationAnchor": 0
+    },
+    {
+      "name": "rightPanel",
+      "matrix": [
+        0.6,
+        -0.95,
+        0.5,
+        1.95
+      ],
+      "anchor": 0,
+      "relation": "",
+      "relationAnchor": 0
+    }
+  ]
 }

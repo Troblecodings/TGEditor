@@ -1,14 +1,22 @@
 {
   "name": "icons",
   "localTransform": [
-    1, 0.0, 0.0, 0.0,
-    0.0, 1, 0.0, 0.0, 
-    0.0, 0.0, 0.2, 0.0,
-    0.0, 0.0, 0.0, 1,
-
-    -0.7, -0.4, 0.12, 0.08,
-    -0.7, 0.3, 0.12, 0.08,
-    -0.7, 0.9, 0.12, 0.08
+    1.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    1.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.2,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    1.0
   ],
   "indices": [
     1,
@@ -23,17 +31,14 @@
     0.0,
     0.0,
     0.0,
-
     1.0,
     0.0,
     1.0,
     0.0,
-
     1.0,
     1.0,
     1.0,
     1.0,
-
     0.0,
     1.0,
     0.0,
@@ -42,5 +47,43 @@
   "materialName": "icons",
   "indexCount": 6,
   "vertexCount": 4,
-  "layerId": 3
+  "layerId": 3,
+  "instances": [
+    {
+      "name": "uppericons",
+      "matrix": [
+        -0.7,
+        -0.4,
+        0.12,
+        0.08
+      ],
+      "anchor": 0,
+      "relation": "",
+      "relationAnchor": 0
+    },
+    {
+      "name": "middleicons",
+      "matrix": [
+        -0.7,
+        0.3,
+        0.12,
+        0.08
+      ],
+      "anchor": 0,
+      "relation": "",
+      "relationAnchor": 0
+    },
+    {
+      "name": "lowericons",
+      "matrix": [
+        -0.7,
+        0.9,
+        0.12,
+        0.08
+      ],
+      "anchor": 0,
+      "relation": "",
+      "relationAnchor": 0
+    }
+  ]
 }

@@ -1,13 +1,22 @@
 {
   "name": "accent",
   "localTransform": [
-    1, 0.0, 0.0, 0.0,
-    0.0, 1, 0.0, 0.0, 
-    0.0, 0.0, 0.1, 0.0,
-    0.0, 0.0, 0, 1,
-
-    -0.6, -0.96, 0.01, 2,
-    -1.0, -0.96, 3, 0.01
+    1.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    1.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.1,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    1.0
   ],
   "indices": [
     0,
@@ -38,5 +47,31 @@
   "materialName": "color_accent",
   "indexCount": 6,
   "vertexCount": 4,
-  "layerId": 3
+  "layerId": 3,
+  "instances": [
+    {
+      "name": "accent0",
+      "matrix": [
+        -0.6,
+        -0.96,
+        0.01,
+        2.0
+      ],
+      "anchor": 0,
+      "relation": "",
+      "relationAnchor": 0
+    },
+    {
+      "name": "accent1",
+      "matrix": [
+        -1.0,
+        -0.96,
+        3.0,
+        0.01
+      ],
+      "anchor": 0,
+      "relation": "",
+      "relationAnchor": 0
+    }
+  ]
 }
