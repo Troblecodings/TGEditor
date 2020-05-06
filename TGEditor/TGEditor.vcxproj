@@ -198,6 +198,7 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="Administration.cpp" />
     <ClCompile Include="ShaderTool.cpp" />
     <ClCompile Include="TGMain.cpp" />
   </ItemGroup>

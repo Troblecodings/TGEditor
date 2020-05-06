@@ -7,6 +7,7 @@
 #include <io/Resource.hpp>
 #include <drawlib/Quad.hpp>
 #include "Administration.hpp"
+#include <io/Font.hpp>
 
 using namespace tge::io;
 using namespace tge::gmc;
@@ -55,8 +56,8 @@ int main() {
 
 
 	// Must be last statement
-	loadAdministration();
-	administration();
+	administration::loadAdministration();
+	administration::administration();
 
 	startTGEngine();
 
