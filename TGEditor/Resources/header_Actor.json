@@ -50,7 +50,7 @@
   "layerId": 3,
   "instances": [
     {
-      "name": "header0",
+      "name": "headerTextures",
       "matrix": [
         -1.0,
         -0.95,
@@ -62,7 +62,7 @@
       "relationAnchor": 0
     },
     {
-      "name": "header1",
+      "name": "headerMaterials",
       "matrix": [
         -1.0,
         -0.3,
@@ -74,7 +74,7 @@
       "relationAnchor": 0
     },
     {
-      "name": "header2",
+      "name": "headerActors",
       "matrix": [
         -1.0,
         0.4,
@@ -86,7 +86,7 @@
       "relationAnchor": 0
     },
     {
-      "name": "header3",
+      "name": "headerTableTextures",
       "matrix": [
         -0.99,
         -0.83,
@@ -98,7 +98,7 @@
       "relationAnchor": 0
     },
     {
-      "name": "header4",
+      "name": "headerTableMaterials",
       "matrix": [
         -0.99,
         -0.18,
@@ -110,7 +110,7 @@
       "relationAnchor": 0
     },
     {
-      "name": "header5",
+      "name": "headerTableActors",
       "matrix": [
         -0.99,
         0.52,
@@ -122,12 +122,72 @@
       "relationAnchor": 0
     },
     {
-      "name": "header6",
+      "name": "headerTitlebar",
       "matrix": [
         -1.0,
         -1.0,
         3.0,
         0.04
+      ],
+      "anchor": 0,
+      "relation": "",
+      "relationAnchor": 0
+    },
+    {
+      "name": "headerProperties",
+      "matrix": [
+        0.5,
+        -0.95,
+        0.5,
+        0.1
+      ],
+      "anchor": 0,
+      "relation": "",
+      "relationAnchor": 0
+    },
+    {
+      "name": "headerPropertiesExample1",
+      "matrix": [
+        0.53,
+        -0.825,
+        0.44,
+        0.06
+      ],
+      "anchor": 0,
+      "relation": "",
+      "relationAnchor": 0
+    },
+    {
+      "name": "headerPropertiesExample2",
+      "matrix": [
+        0.53,
+        -0.74,
+        0.44,
+        0.06
+      ],
+      "anchor": 0,
+      "relation": "",
+      "relationAnchor": 0
+    },
+    {
+      "name": "headerPropertiesExample3",
+      "matrix": [
+        0.53,
+        -0.655,
+        0.44,
+        0.06
+      ],
+      "anchor": 0,
+      "relation": "",
+      "relationAnchor": 0
+    },
+    {
+      "name": "headerPropertiesExample4",
+      "matrix": [
+        0.53,
+        -0.57,
+        0.44,
+        0.06
       ],
       "anchor": 0,
       "relation": "",
