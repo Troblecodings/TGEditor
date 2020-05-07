@@ -75,7 +75,8 @@
     <IntDir>$(SolutionDir)run\inter\$(Platform)\$(Configuration)\</IntDir>
     <CustomBuildAfterTargets>
     </CustomBuildAfterTargets>
-    <CustomBuildBeforeTargets>Run</CustomBuildBeforeTargets>
+    <CustomBuildBeforeTargets>
+    </CustomBuildBeforeTargets>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <LinkIncremental>true</LinkIncremental>
@@ -83,7 +84,8 @@
     <IntDir>$(SolutionDir)run\inter\$(Platform)\$(Configuration)\</IntDir>
     <CustomBuildAfterTargets>
     </CustomBuildAfterTargets>
-    <CustomBuildBeforeTargets>Run</CustomBuildBeforeTargets>
+    <CustomBuildBeforeTargets>
+    </CustomBuildBeforeTargets>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <LinkIncremental>false</LinkIncremental>
@@ -116,7 +118,8 @@
       <IgnoreSpecificDefaultLibraries>%(IgnoreSpecificDefaultLibraries)</IgnoreSpecificDefaultLibraries>
     </Link>
     <CustomBuildStep>
-      <Command>make.bat</Command>
+      <Command>
+      </Command>
       <TreatOutputAsContent>
       </TreatOutputAsContent>
     </CustomBuildStep>
@@ -142,7 +145,8 @@
       <IgnoreSpecificDefaultLibraries>%(IgnoreSpecificDefaultLibraries)</IgnoreSpecificDefaultLibraries>
     </Link>
     <CustomBuildStep>
-      <Command>make.bat</Command>
+      <Command>
+      </Command>
       <TreatOutputAsContent>
       </TreatOutputAsContent>
     </CustomBuildStep>
