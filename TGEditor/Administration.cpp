@@ -9,6 +9,8 @@
 #include <drawlib/Quad.hpp>
 #include <pipeline/window/Window.hpp>
 #include <io/Mouse.hpp>
+#include <iomanip>
+#include <sstream>
 
 namespace administration {
 
@@ -28,6 +30,67 @@ namespace administration {
     uint32_t currentSelectedActor = 0;
     std::vector<char*> actorNames;
 
+    static COLORREF acrCustClr[16];
+
+    inline static void reset() {
+        tge::win::mouseHomogeneousX = 0;
+        tge::win::mouseHomogeneousY = 0;
+        tg_io::FIRST_MOUSE_BUTTON = false;
+        flag = false;
+    }
+
+    inline static const char* openFileChooser(const char filter[], const uint64_t flags, bool* isMultiselect = nullptr, uint64_t* offset = nullptr) {
+#ifdef WIN32
+        char fileNames[2048];
+        fileNames[0] = '\0';
+
+        OPENFILENAMEA openFilenameInfo;
+        ZeroMemory(&openFilenameInfo, sizeof(OPENFILENAMEA));
+        openFilenameInfo.lStructSize = sizeof(OPENFILENAMEA);
+        openFilenameInfo.lpstrFilter = filter;
+        openFilenameInfo.nFilterIndex = 1;
+        openFilenameInfo.lpstrInitialDir = tge::nio::current_working_dir;
+        openFilenameInfo.lpstrFile = fileNames;
+        openFilenameInfo.nMaxFile = sizeof(fileNames);
+        openFilenameInfo.Flags = flags | OFN_EXPLORER | OFN_NOCHANGEDIR | OFN_DONTADDTORECENT;
+
+        if (GetOpenFileNameA(&openFilenameInfo)) {
+            if (isMultiselect) {
+                *isMultiselect = openFilenameInfo.nFileExtension == NULL;
+            }
+            if (offset) {
+                *offset = openFilenameInfo.nFileOffset;
+            }
+            return fileNames;
+        }
+#endif // WIN32
+        return nullptr;
+    }
+
+    inline static const uint32_t openColorChooser() {
+#ifdef WIN32
+        DWORD rgbCurrent;
+
+        CHOOSECOLORA chooseColor;
+        ZeroMemory(&chooseColor, sizeof(CHOOSECOLORA));
+        chooseColor.lStructSize = sizeof(CHOOSECOLORA);
+        chooseColor.Flags = CC_FULLOPEN;
+        chooseColor.lpCustColors = acrCustClr;
+        if (ChooseColorA(&chooseColor)) {
+            // Transform from BGR to RGBA
+            uint32_t color = chooseColor.rgbResult;
+            color |= (color & 0xFF) << 24;
+            uint32_t green = (color & 0xFF00) << 8;
+            color &= 0xFFFF00FF;
+            color |= (color & 0xFF0000) >> 8;
+            color &= 0xFF00FFFF;
+            color |= green;
+            return  color | 0xFF;
+        }
+#endif // WIN32
+        return 0xFFFFFFFF;
+    }
+
     void loadAdministration() noexcept {
         std::vector<std::string> stringsToWrite;
         std::vector<glm::mat4> stringMatrix;
@@ -35,11 +98,11 @@ namespace administration {
         if (!fs::exists(RESOURCE_FOLDER))
             fs::create_directories(RESOURCE_FOLDER);
 
-        fs::path projectPath(RESOURCE_FOLDER);
+        std::string projectPath(RESOURCE_FOLDER);
         projectPath.append(tgeproperties.getString("project"));
 
-        if (!fs::exists(projectPath)) {
-            TGE_CRASH(L"The given project path doesn't exist! Please change the project name!", TG_ERR_DB_FILE_NOT_FOUND);
+        while (projectPath.empty() || !fs::exists(projectPath) || projectPath.substr(projectPath.length() - 5).compare(".json") != 0) {
+            projectPath = openFileChooser("Json (*.json)\0*.json\0\0", OFN_FILEMUSTEXIST | OFN_PATHMUSTEXIST);
         }
 
         std::ifstream input(projectPath);
@@ -110,27 +173,18 @@ namespace administration {
             if (!tg_io::FIRST_MOUSE_BUTTON || flag)
                 return;
             flag = true;
-#ifdef WIN32
-            char fileNames[2048];
-            fileNames[0] = '\0';
 
-            OPENFILENAMEA openfilenameinfo;
-            ZeroMemory(&openfilenameinfo, sizeof(OPENFILENAMEA));
-            openfilenameinfo.lStructSize = sizeof(OPENFILENAMEA);
-            openfilenameinfo.lpstrFilter = "Textures (*.png)\0*.png\0\0";
-            openfilenameinfo.nFilterIndex = 1;
-            openfilenameinfo.lpstrFile = fileNames;
-            openfilenameinfo.nMaxFile = sizeof(fileNames);
-            openfilenameinfo.Flags = OFN_ALLOWMULTISELECT | OFN_EXPLORER | OFN_FILEMUSTEXIST | OFN_PATHMUSTEXIST
-                | OFN_DONTADDTORECENT;
+            bool isMultiselect = false;
+            uint64_t offset = 0;
+            const char* returnstring = openFileChooser("Textures (*.png)\0*.png\0\0", OFN_ALLOWMULTISELECT | OFN_FILEMUSTEXIST | OFN_PATHMUSTEXIST, &isMultiselect, &offset);
 
-            if (GetOpenFileNameA(&openfilenameinfo)) {
+            if (returnstring) {
                 std::string command("texture add");
-                if (openfilenameinfo.nFileExtension == NULL) {
-                    char* fnames = openfilenameinfo.lpstrFile + openfilenameinfo.nFileOffset;
+                if (isMultiselect) {
+                    const char* fnames = returnstring + offset;
                     while (*fnames) {
                         command.append(" \"");
-                        command.append(openfilenameinfo.lpstrFile);
+                        command.append(returnstring);
                         command.append("\\");
                         command.append(fnames);
                         command.append("\"");
@@ -140,20 +194,57 @@ namespace administration {
                     }
                 } else {
                     command.append(" \"");
-                    command.append(openfilenameinfo.lpstrFile);
+                    command.append(returnstring);
                     command.append("\"");
                 }
                 int CHECK(shadertool::exec(command.c_str()));
-                CHECK(shadertool::exec(command.c_str()));
             }
-          
-            tge::win::mouseHomogeneousX = 0;
-            tge::win::mouseHomogeneousY = 0;
-            tg_io::FIRST_MOUSE_BUTTON = false;
-            flag = false;
-#endif
+
+            reset();
         });
-        ui::boundingBoxFunctions.push_back([](uint32_t id) { if (id == 0) printf("true"); });
+
+        ui::boundingBoxFunctions.push_back([](uint32_t id) { 
+            if (!tg_io::FIRST_MOUSE_BUTTON || flag)
+                return;
+            flag = true;
+
+            uint64_t offset = 0;
+            const char* file = openFileChooser("Textures (*.tgx)\0*.tgx\0\0", OFN_FILEMUSTEXIST | OFN_PATHMUSTEXIST, nullptr, &offset);
+            if (file) {
+                std::string command("material add ");
+
+                const std::string filename = file + offset;
+                const std::string fname = filename.substr(0, filename.length() - 4);
+                command.append(fname);
+                const uint32_t offset = command.length();
+
+                command.append(" ");
+                command.append(fname);
+
+                std::stringstream stringstream;
+                stringstream << std::hex << openColorChooser();
+                std::string colorstring(stringstream.str());
+                if (colorstring.length() < 8) {
+                    const uint32_t fill = 8 - colorstring.length();
+                    for (size_t i = 0; i <= fill; i++)
+                        colorstring.insert(colorstring.begin(), '0');
+                }
+                command.append(" ");
+                command.append(colorstring);
+
+                uint8_t count = 0;
+
+                std::string commandt = std::string(command);
+                while (shadertool::exec(commandt.c_str()) != 0) {
+                    commandt = std::string(command);
+                    commandt.insert(offset, std::to_string(count)); 
+                    count++;
+                }
+            }
+
+            reset();
+        });
+
         ui::boundingBoxFunctions.push_back([](uint32_t id) { if (id == 0) printf("true"); });
 
         //Copy

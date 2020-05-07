@@ -11,6 +11,8 @@ namespace shadertool {
 		std::string commandLineToRun(tge::nio::current_working_dir);
 		commandLineToRun.append(SHADERTOOL);
 		commandLineToRun.append(command);
+		commandLineToRun.append(" --dir ");
+		commandLineToRun.append(tge::nio::current_working_dir);
 		return std::system(commandLineToRun.c_str());
 	}
 }
