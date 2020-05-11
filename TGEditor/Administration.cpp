@@ -11,6 +11,8 @@
 #include <io/Mouse.hpp>
 #include <iomanip>
 #include <sstream>
+#include <pipeline/CommandBuffer.hpp>
+#include <pipeline/Draw.hpp>
 
 namespace administration {
 
@@ -91,10 +93,23 @@ namespace administration {
         return 0xFFFFFFFF;
     }
 
-    void loadAdministration() noexcept {
-        std::vector<std::string> stringsToWrite;
-        std::vector<glm::mat4> stringMatrix;
+    static uint32_t stringActorId = UINT32_MAX;
+    static std::vector<std::string> stringsToWrite;
+    static std::vector<glm::mat4> stringMatrix;
 
+    inline static void recreateStrings() {
+        const char** strings = new const char* [stringsToWrite.size()];
+        for (size_t i = 0; i < stringsToWrite.size(); i++) {
+            strings[i] = stringsToWrite[i].c_str();
+        }
+
+        if (stringActorId != UINT32_MAX)
+            tge::fnt::destroyStrings(stringActorId);
+        stringActorId = tge::fnt::createStringActor(tge::fnt::fonts.data(), strings, stringsToWrite.size(), stringMatrix.data());
+        delete[] strings;
+    }
+
+    void loadAdministration() noexcept {
         if (!fs::exists(RESOURCE_FOLDER))
             fs::create_directories(RESOURCE_FOLDER);
 
@@ -113,7 +128,9 @@ namespace administration {
         auto materialNames = json["materialNames"];
         auto textureNames = json["textureNames"];
 
-        stringsToWrite.reserve(actorNames.size() + materialNames.size() + textureNames.size());
+        const uint32_t reserveSize = actorNames.size() + materialNames.size() + textureNames.size();
+        stringsToWrite.reserve(reserveSize);
+        stringMatrix.reserve(reserveSize);
 
         uint32_t count = 0;
         for (const auto& actorname : actorNames) {
@@ -137,12 +154,7 @@ namespace administration {
             count++;
         }
 
-        const char** strings = new const char* [stringsToWrite.size()];
-        for (size_t i = 0; i < stringsToWrite.size(); i++) {
-            strings[i] = stringsToWrite[i].c_str();
-        }
-        tge::fnt::createStringActor(tge::fnt::fonts.data(), strings, stringsToWrite.size(), stringMatrix.data());
-        delete strings;
+        recreateStrings();
     }
 
     void administration() noexcept {
@@ -165,8 +177,8 @@ namespace administration {
 
         // Delete
         ui::boundingBoxFunctions.push_back([](uint32_t id) { });
-        ui::boundingBoxFunctions.push_back([](uint32_t id) { if (id == 0) printf("true"); });
-        ui::boundingBoxFunctions.push_back([](uint32_t id) { if (id == 0) printf("true"); });
+        ui::boundingBoxFunctions.push_back([](uint32_t id) { });
+        ui::boundingBoxFunctions.push_back([](uint32_t id) { });
 
         // Add
         ui::boundingBoxFunctions.push_back([](uint32_t id) {
@@ -245,7 +257,16 @@ namespace administration {
             reset();
         });
 
-        ui::boundingBoxFunctions.push_back([](uint32_t id) { if (id == 0) printf("true"); });
+        ui::boundingBoxFunctions.push_back([](uint32_t id) { 
+            if (!tg_io::FIRST_MOUSE_BUTTON || flag)
+                return;
+            flag = true;
+            executionQueue.push_back([] {
+                recreateStrings();
+                fillCommandBuffer();
+            });
+            reset();
+        });
 
         //Copy
         ui::boundingBoxFunctions.push_back([](uint32_t id) { if (id == 0) printf("true"); });
