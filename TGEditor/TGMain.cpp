@@ -31,25 +31,37 @@ int main() {
 	OUT_LV_DEBUG(returncode)
 #endif // Only in debug mode
 
-	loadResourceFile("Resources/TGEditor.tgr");
+		loadResourceFile("Resources/TGEditor.tgr");
 
-	const char* chars[] = { "TEXTURES", "MATERIALS", "ACTORS", 
-	"Name", "Name", "Name",
-	"File", "Edit", "Project", "Settings"
-};
+	const char* chars[] = {
+		"TEXTURES", "MATERIALS", "ACTORS", "PROPERTIES",
+		"Name", "Name", "Name",
+		"File", "Edit", "Project", "Settings",
+		"Example Label", "Example Label", "Example Label", "Example Label"
+	};
+
+	const float SPACING = 0.03;
+	const float LABEL_SPACING = 0.085;
+
 	glm::mat4 materials[] = {
-		tge::drw::genMatrix(-0.97f, -0.88f, -0.5f, 0.07f, 0.07f),
-		tge::drw::genMatrix(-0.97f, -0.23f, -0.5f, 0.07f, 0.07f),
-		tge::drw::genMatrix(-0.97f, 0.47f, -0.5f, 0.07f, 0.07f),
+		tge::drw::genMatrix(-1.0f + SPACING, -0.880f, -0.5f, 0.050f, 0.07f),
+		tge::drw::genMatrix(-1.0f + SPACING, -0.230f, -0.5f, 0.050f, 0.07f),
+		tge::drw::genMatrix(-1.0f + SPACING,  0.470f, -0.5f, 0.050f, 0.07f),
+		tge::drw::genMatrix(0.5f + SPACING, -0.880f, -0.5f, 0.050f, 0.07f),
 
-		tge::drw::genMatrix(-0.97f, -0.795f, -0.5f, 0.04f, 0.04f),
-	    tge::drw::genMatrix(-0.97f, -0.145f, -0.5f, 0.04f, 0.04f),
-		tge::drw::genMatrix(-0.97f, 0.555f, -0.5f, 0.04f, 0.04f),
+		tge::drw::genMatrix(-1.0f + SPACING, -0.795f, -0.5f, 0.025f, 0.04f),
+		tge::drw::genMatrix(-1.0f + SPACING, -0.145f, -0.5f, 0.025f, 0.04f),
+		tge::drw::genMatrix(-1.0f + SPACING,  0.555f, -0.5f, 0.025f, 0.04f),
 
-		tge::drw::genMatrix(-0.95f, -0.97f, -0.5f, 0.04f, 0.04f),
-		tge::drw::genMatrix(-0.88f, -0.97f, -0.5f, 0.04f, 0.04f),
-		tge::drw::genMatrix(-0.81f, -0.97f, -0.5f, 0.04f, 0.04f),
-		tge::drw::genMatrix(-0.70f, -0.97f, -0.5f, 0.04f, 0.04f)
+		tge::drw::genMatrix(-0.95f, -0.970f, -0.5f, 0.030f, 0.04f),
+		tge::drw::genMatrix(-0.88f, -0.970f, -0.5f, 0.030f, 0.04f),
+		tge::drw::genMatrix(-0.81f, -0.970f, -0.5f, 0.030f, 0.04f),
+		tge::drw::genMatrix(-0.70f, -0.970f, -0.5f, 0.030f, 0.04f),
+
+		tge::drw::genMatrix(0.5f + SPACING * 1.5, -0.78f + LABEL_SPACING * 0, -0.5f, 0.025f, 0.04f),
+		tge::drw::genMatrix(0.5f + SPACING * 1.5, -0.78f + LABEL_SPACING * 1, -0.5f, 0.025f, 0.04f),
+		tge::drw::genMatrix(0.5f + SPACING * 1.5, -0.78f + LABEL_SPACING * 2, -0.5f, 0.025f, 0.04f),
+		tge::drw::genMatrix(0.5f + SPACING * 1.5, -0.78f + LABEL_SPACING * 3, -0.5f, 0.025f, 0.04f),
 	};
 	constexpr uint32_t size = sizeof(chars) / sizeof(*chars);
 	tge::fnt::createStringActor(tge::fnt::fonts.data(), chars, size, materials);

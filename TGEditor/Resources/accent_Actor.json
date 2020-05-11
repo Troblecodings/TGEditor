@@ -50,7 +50,7 @@
   "layerId": 3,
   "instances": [
     {
-      "name": "accent0",
+      "name": "accentLeft",
       "matrix": [
         -0.5,
         -0.96,
@@ -62,12 +62,24 @@
       "relationAnchor": 0
     },
     {
-      "name": "accent1",
+      "name": "accentTitlebar",
       "matrix": [
         -1.0,
         -0.96,
         3.0,
         0.01
+      ],
+      "anchor": 0,
+      "relation": "",
+      "relationAnchor": 0
+    },
+    {
+      "name": "accentRight",
+      "matrix": [
+        0.5,
+        -0.96,
+        0.01,
+        2.0
       ],
       "anchor": 0,
       "relation": "",
