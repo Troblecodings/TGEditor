@@ -1,0 +1,15 @@
+{
+  "actorNames": [
+    "test",
+    "test2"
+  ],
+  "materialNames": [
+    "test2",
+    "test22"
+  ],
+  "textureNames": [
+    "test3",
+    "test23"
+  ],
+  "fontNames": {}
+}

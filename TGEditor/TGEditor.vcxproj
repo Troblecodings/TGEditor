@@ -202,8 +202,11 @@
     <ClCompile Include="TGMain.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="Administration.hpp" />
     <ClInclude Include="ShaderTool.hpp" />
-    <ClInclude Include="TGMain.h" />
+  </ItemGroup>
+  <ItemGroup>
+    <Xml Include="Properties.xml" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

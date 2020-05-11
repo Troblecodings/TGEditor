@@ -1,4 +1,3 @@
-#include "TGMain.h"
 #include "ShaderTool.hpp"
 #include <TGEngine.hpp>
 #include <gamecontent/PlayerController.hpp>
@@ -6,10 +5,8 @@
 #include <pipeline/buffer/Texturebuffer.hpp>
 #include <gamecontent/camera/2DCamera.hpp>
 #include <io/Resource.hpp>
-#include <io/Font.hpp>
 #include <drawlib/Quad.hpp>
-#include <array>
-#include <pipeline/buffer/UniformBuffer.hpp>
+#include "Administration.hpp"
 
 using namespace tge::io;
 using namespace tge::gmc;
@@ -17,16 +14,6 @@ using namespace tge::tex;
 using namespace tge::buf;
 
 static TopDownCamera camera;
-
-bool flag = false;
-std::array<float, 784> uniformData{
-	1, 0, 0, 0,
-	0, 1, 0, 0,
-	0, 0, 0.1, 0,
-	0, 0, 0, 1
-};
-uint32_t currentSelectedActor = 0;
-std::vector<char*> actorNames;
 
 static void contoller(Input in) {}
 
@@ -44,15 +31,6 @@ int main() {
 #endif // Only in debug mode
 
 		loadResourceFile("Resources/TGEditor.tgr");
-
-	for (size_t i = 16; i < 16 + 128 * 4; i += 4) {
-		uniformData[i + 2] = 1;
-		uniformData[i + 3] = 1;
-	}
-
-	fillUniformBuffer(TRANSFORM_BUFFER, uniformData.data(), uniformData.size() * sizeof(float));
-	fillUniformBuffer(TRANSFORM_BUFFER_2, uniformData.data(), uniformData.size() * sizeof(float));
-
 
 	const char* chars[] = {
 		"TEXTURES", "MATERIALS", "ACTORS", "PROPERTIES",
@@ -86,6 +64,11 @@ int main() {
 	};
 	constexpr uint32_t size = sizeof(chars) / sizeof(*chars);
 	tge::fnt::createStringActor(tge::fnt::fonts.data(), chars, size, materials);
+
+
+	// Must be last statement
+	loadAdministration();
+	administration();
 
 	startTGEngine();
 
