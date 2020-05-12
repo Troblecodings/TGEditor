@@ -105,7 +105,7 @@ namespace administration {
 
         if (stringActorId != UINT32_MAX)
             tge::fnt::destroyStrings(stringActorId);
-        stringActorId = tge::fnt::createStringActor(tge::fnt::fonts.data(), strings, stringsToWrite.size(), stringMatrix.data());
+        stringActorId = tge::fnt::createStringActor<std::string>(tge::fnt::fonts.data(), stringsToWrite.data(), stringsToWrite.size(), stringMatrix.data());
         delete[] strings;
     }
 
