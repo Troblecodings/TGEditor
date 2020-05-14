@@ -13,6 +13,7 @@
 #include <sstream>
 #include <pipeline/CommandBuffer.hpp>
 #include <pipeline/Draw.hpp>
+#include <future>
 
 namespace administration {
 
@@ -32,6 +33,8 @@ namespace administration {
     uint32_t currentSelectedActor = 0;
     std::vector<char*> actorNames;
 
+    static std::string projectPath(RESOURCE_FOLDER);
+    static std::string projectFolderPath;
     static COLORREF acrCustClr[16];
 
     inline static void reset() {
@@ -98,62 +101,66 @@ namespace administration {
     static std::vector<glm::mat4> stringMatrix;
 
     inline static void recreateStrings() {
-        const char** strings = new const char* [stringsToWrite.size()];
-        for (size_t i = 0; i < stringsToWrite.size(); i++) {
-            strings[i] = stringsToWrite[i].c_str();
-        }
+        std::thread recreationLoad([]() {
+            std::ifstream input(projectPath);
+            nlohmann::json json;
+            input >> json;
 
-        if (stringActorId != UINT32_MAX)
-            tge::fnt::destroyStrings(stringActorId);
-        stringActorId = tge::fnt::createStringActor<std::string>(tge::fnt::fonts.data(), stringsToWrite.data(), stringsToWrite.size(), stringMatrix.data());
-        delete[] strings;
+            auto actorNames = json["actorNames"];
+            auto materialNames = json["materialNames"];
+            auto textureNames = json["textureNames"];
+
+            const uint32_t reserveSize = actorNames.size() + materialNames.size() + textureNames.size();
+            stringsToWrite.reserve(reserveSize);
+            stringMatrix.reserve(reserveSize);
+
+            constexpr float fontscale = 0.45f;
+
+            uint32_t count = 0;
+            for (const auto& actorname : actorNames) {
+                std::string name = actorname.get<std::string>();
+                stringsToWrite.push_back(name);
+                stringMatrix.push_back(drw::genMatrix(-0.98f, -0.75f + count * 0.05, -0.5f, fontscale, fontscale));
+                count++;
+            }
+            count = 0;
+            for (const auto& materialname : materialNames) {
+                std::string name = materialname.get<std::string>();
+                stringsToWrite.push_back(name);
+                stringMatrix.push_back(drw::genMatrix(-0.98f, -0.1f + count * 0.05, -0.5f, fontscale, fontscale));
+                count++;
+            }
+            count = 0;
+            for (const auto& texturename : textureNames) {
+                std::string name = texturename.get<std::string>();
+                stringsToWrite.push_back(name);
+                stringMatrix.push_back(drw::genMatrix(-0.98f, 0.6f + count * 0.05, -0.5f, fontscale, fontscale));
+                count++;
+            }
+
+            executionQueue.push_back([] {
+                if (stringActorId != UINT32_MAX)
+                    tge::fnt::destroyStrings(stringActorId);
+                stringActorId = tge::fnt::createStringActor(tge::fnt::fonts.data(), stringsToWrite.data(), stringsToWrite.size(), stringMatrix.data());
+                fillCommandBuffer();
+            });
+        });
+        recreationLoad.detach();
     }
 
     void loadAdministration() noexcept {
         if (!fs::exists(RESOURCE_FOLDER))
             fs::create_directories(RESOURCE_FOLDER);
 
-        std::string projectPath(RESOURCE_FOLDER);
         projectPath.append(tgeproperties.getString("project"));
 
         while (projectPath.empty() || !fs::exists(projectPath) || projectPath.substr(projectPath.length() - 5).compare(".json") != 0) {
             projectPath = openFileChooser("Json (*.json)\0*.json\0\0", OFN_FILEMUSTEXIST | OFN_PATHMUSTEXIST);
         }
+        projectFolderPath = fs::path(projectPath).remove_filename().string();
 
-        std::ifstream input(projectPath);
-        nlohmann::json json;
-        input >> json;
-
-        auto actorNames = json["actorNames"];
-        auto materialNames = json["materialNames"];
-        auto textureNames = json["textureNames"];
-
-        const uint32_t reserveSize = actorNames.size() + materialNames.size() + textureNames.size();
-        stringsToWrite.reserve(reserveSize);
-        stringMatrix.reserve(reserveSize);
-
-        uint32_t count = 0;
-        for (const auto& actorname : actorNames) {
-            std::string name = actorname.get<std::string>();
-            stringsToWrite.push_back(name);
-            stringMatrix.push_back(drw::genMatrix(-0.98f, -0.75f + count * 0.05, -0.5f, 0.04f, 0.04f));
-            count++;
-        }
-        count = 0;
-        for (const auto& materialname : materialNames) {
-            std::string name = materialname.get<std::string>();
-            stringsToWrite.push_back(name);
-            stringMatrix.push_back(drw::genMatrix(-0.98f, -0.1f + count * 0.05, -0.5f, 0.04f, 0.04f));
-            count++;
-        }
-        count = 0;
-        for (const auto& texturename : textureNames) {
-            std::string name = texturename.get<std::string>();
-            stringsToWrite.push_back(name);
-            stringMatrix.push_back(drw::genMatrix(-0.98f, 0.6f + count * 0.05, -0.5f, 0.04f, 0.04f));
-            count++;
-        }
-
+        stringsToWrite.clear();
+        stringMatrix.clear();
         recreateStrings();
     }
 
@@ -261,10 +268,57 @@ namespace administration {
             if (!tg_io::FIRST_MOUSE_BUTTON || flag)
                 return;
             flag = true;
-            executionQueue.push_back([] {
+
+            std::thread materialRead([]() {
+                std::string material(projectFolderPath);
+                material.append("\\Materials.json");
+
+                std::ifstream input(material);
+                nlohmann::json json;
+                input >> json;
+
+                std::vector<std::string> materialNames;
+                const uint32_t size = json.size();
+                materialNames.reserve(size);
+                for (auto& [key, value] : json.items()) {
+                    auto str = key;
+                    materialNames.push_back(str);
+                }
+
+                glm::mat4* transforms = new glm::mat4[size];
+
+                uint32_t selected = 0;
+                uint32_t* implselected = &selected;
+
+                const uint32_t startoffset = ui::boundingBoxes.size();
+
+                tge::ui::ListInputInfo inputInfo;
+                inputInfo.scalefactor = 0.4f;
+                inputInfo.heightOffset = tge::fnt::homogenHeight(tge::fnt::fonts.data());
+                inputInfo.startX = 0;
+                inputInfo.width = 0.1f;
+                inputInfo.startY = 0;
+                inputInfo.size = size;
+                ui::createList(&inputInfo, 0.5f, 1, transforms, true, [=](uint32_t x) { 
+                    if (!tg_io::FIRST_MOUSE_BUTTON)
+                        return;
+                    *implselected = x; 
+                });
+                const uint32_t text = tge::fnt::createStringActor(tge::fnt::fonts.data(), materialNames.data(), materialNames.size(), transforms);
+                executionQueue.push_back(fillCommandBuffer);
+
+                while (selected == 0);
+                
+                ui::deleteBoundingBoxes(startoffset, startoffset + size);
+                tge::fnt::destroyStrings(text);
+
+                std::string selection = materialNames[selected - startoffset];
+
                 recreateStrings();
-                fillCommandBuffer();
             });
+
+            materialRead.detach();
+
             reset();
         });
 

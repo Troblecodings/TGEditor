@@ -16,8 +16,6 @@
     <boolean name="minimizeable" value="true" />
     <int name="height" value="1000"/>
     <int name="width" value="1000"/>
-    <int name="height" value="1061"/>
-    <int name="width" value="1920"/>
     <boolean name="center" value="true"/>
     <!--Will be ignored if center is true-->
     <int name="posx" value="0" />
