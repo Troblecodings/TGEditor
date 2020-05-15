@@ -6,11 +6,18 @@
 
 namespace administration {
 
+	enum class ActorType {
+		TEXTURE,
+		MATERIAL,
+		ACTOR
+	};
+
 	extern std::atomic<bool> flag;
 	//Threadsafe ... hopefully
 	extern std::array<std::atomic<float>, 784> uniformData;
 	extern uint32_t currentSelectedActor;
-	extern std::vector<char*> actorNames;
+	extern ActorType currentSelectedActorType;
+	extern std::string currentSelectedActorName;
 
 	constexpr char RESOURCE_FOLDER[] = "./Resources/";
 	constexpr char ACTOR_APPENDIX[] = "_Actor";

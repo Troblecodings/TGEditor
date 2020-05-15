@@ -30,8 +30,9 @@ namespace administration {
         0, 0, 0.1f, 0,
         0, 0, 0, 1.0f
     };
-    uint32_t currentSelectedActor = 0;
-    std::vector<char*> actorNames;
+
+    ActorType currentSelectedActorType;
+    std::string currentSelectedActorName;
 
     static std::string projectPath(RESOURCE_FOLDER);
     static std::string projectFolderPath;
@@ -97,11 +98,32 @@ namespace administration {
     }
 
     static uint32_t stringActorId = UINT32_MAX;
+    static uint32_t startOffset = UINT32_MAX;
+    static uint32_t endOffset = UINT32_MAX;
+
+    static uint32_t materialOffset = 0;
+    static uint32_t actorOffset = 0;
+
     static std::vector<std::string> stringsToWrite;
     static std::vector<glm::mat4> stringMatrix;
 
+    static void selection(const uint32_t selection) {
+        const uint32_t selectedActor = selection - startOffset;
+        currentSelectedActorName = stringsToWrite[selectedActor];
+        if (selectedActor < materialOffset) {
+            currentSelectedActorType = ActorType::ACTOR;
+        } else if(selectedActor >= materialOffset && selectedActor < actorOffset) {
+            currentSelectedActorType = ActorType::MATERIAL;
+        } else {
+            currentSelectedActorType = ActorType::TEXTURE;
+        }
+    }
+
     inline static void recreateStrings() {
-        std::thread recreationLoad([]() {
+        std::thread recreationLoad([=]() {
+            stringsToWrite.clear();
+            stringMatrix.clear();
+
             std::ifstream input(projectPath);
             nlohmann::json json;
             input >> json;
@@ -112,38 +134,66 @@ namespace administration {
 
             const uint32_t reserveSize = actorNames.size() + materialNames.size() + textureNames.size();
             stringsToWrite.reserve(reserveSize);
-            stringMatrix.reserve(reserveSize);
-
-            constexpr float fontscale = 0.45f;
+            stringMatrix.resize(reserveSize);
 
             uint32_t count = 0;
             for (const auto& actorname : actorNames) {
                 std::string name = actorname.get<std::string>();
                 stringsToWrite.push_back(name);
-                stringMatrix.push_back(drw::genMatrix(-0.98f, -0.75f + count * 0.05, -0.5f, fontscale, fontscale));
                 count++;
             }
             count = 0;
             for (const auto& materialname : materialNames) {
                 std::string name = materialname.get<std::string>();
                 stringsToWrite.push_back(name);
-                stringMatrix.push_back(drw::genMatrix(-0.98f, -0.1f + count * 0.05, -0.5f, fontscale, fontscale));
                 count++;
             }
             count = 0;
             for (const auto& texturename : textureNames) {
                 std::string name = texturename.get<std::string>();
                 stringsToWrite.push_back(name);
-                stringMatrix.push_back(drw::genMatrix(-0.98f, 0.6f + count * 0.05, -0.5f, fontscale, fontscale));
                 count++;
             }
 
-            executionQueue.push_back([] {
-                if (stringActorId != UINT32_MAX)
-                    tge::fnt::destroyStrings(stringActorId);
-                stringActorId = tge::fnt::createStringActor(tge::fnt::fonts.data(), stringsToWrite.data(), stringsToWrite.size(), stringMatrix.data());
-                fillCommandBuffer();
+            if (stringActorId != UINT32_MAX) {
+                tge::fnt::destroyStrings(stringActorId);
+                ui::deleteBoundingBoxes(startOffset, endOffset);
+            }
+            startOffset = ui::boundingBoxes.size();
+            endOffset = startOffset + stringsToWrite.size();
+
+            constexpr float fontscale = 0.45f;
+            constexpr uint32_t LIST_COUNT = 3;
+
+            ui::ListInputInfo listInputInfo[LIST_COUNT];
+            listInputInfo[2].scalefactor = listInputInfo[1].scalefactor = listInputInfo[0].scalefactor = fontscale;
+            listInputInfo[2].width = listInputInfo[1].width = listInputInfo[0].width = 0.25f;
+            listInputInfo[2].heightOffset = listInputInfo[1].heightOffset = listInputInfo[0].heightOffset = tge::fnt::homogenHeight(tge::fnt::fonts.data());
+            listInputInfo[2].startX = listInputInfo[1].startX = listInputInfo[0].startX = -0.98f;
+
+            listInputInfo[0].startY = -0.75f;
+            listInputInfo[0].size = textureNames.size();
+
+            listInputInfo[1].startY = -0.1f;
+            listInputInfo[1].size = materialOffset = materialNames.size();
+
+            listInputInfo[2].startY = 0.6f;
+            listInputInfo[2].size = actorNames.size();
+            actorOffset = actorNames.size() + materialOffset;
+
+            ui::createList(listInputInfo, -0.5, LIST_COUNT, stringMatrix.data(), [=] (uint32_t x) {
+                if (!tg_io::FIRST_MOUSE_BUTTON || flag)
+                    return;
+                flag = true;
+
+                selection(x);
+
+                reset();
             });
+
+            stringActorId = tge::fnt::createStringActor(tge::fnt::fonts.data(), stringsToWrite.data(), stringsToWrite.size(), stringMatrix.data());
+
+            executionQueue.push_back(fillCommandBuffer);
         });
         recreationLoad.detach();
     }
@@ -159,8 +209,6 @@ namespace administration {
         }
         projectFolderPath = fs::path(projectPath).remove_filename().string();
 
-        stringsToWrite.clear();
-        stringMatrix.clear();
         recreateStrings();
     }
 
@@ -299,7 +347,7 @@ namespace administration {
                 inputInfo.width = 0.1f;
                 inputInfo.startY = 0;
                 inputInfo.size = size;
-                ui::createList(&inputInfo, 0.5f, 1, transforms, true, [=](uint32_t x) { 
+                ui::createList(&inputInfo, 0.5f, 1, transforms, [=](uint32_t x) { 
                     if (!tg_io::FIRST_MOUSE_BUTTON)
                         return;
                     *implselected = x; 
