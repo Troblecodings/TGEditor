@@ -41,7 +41,7 @@ namespace administration {
     inline static void reset() {
         tge::win::mouseHomogeneousX = 0;
         tge::win::mouseHomogeneousY = 0;
-        tg_io::FIRST_MOUSE_BUTTON = false;
+        tge::io::FIRST_MOUSE_BUTTON = false;
         flag = false;
     }
 
@@ -181,8 +181,8 @@ namespace administration {
             listInputInfo[2].size = actorNames.size();
             actorOffset = actorNames.size() + materialOffset;
 
-            ui::createList(listInputInfo, -0.5, LIST_COUNT, stringMatrix.data(), [=] (uint32_t x) {
-                if (!tg_io::FIRST_MOUSE_BUTTON || flag)
+            ui::createList(listInputInfo, -0.5, LIST_COUNT, stringMatrix.data(), [=](uint32_t x) {
+                if (!tge::io::FIRST_MOUSE_BUTTON || flag)
                     return;
                 flag = true;
 
@@ -192,8 +192,9 @@ namespace administration {
             });
 
             stringActorId = tge::fnt::createStringActor(tge::fnt::fonts.data(), stringsToWrite.data(), stringsToWrite.size(), stringMatrix.data());
-
             executionQueue.push_back(fillCommandBuffer);
+
+            while (true);
         });
         recreationLoad.detach();
     }
@@ -237,7 +238,7 @@ namespace administration {
 
         // Add
         ui::boundingBoxFunctions.push_back([](uint32_t id) {
-            if (!tg_io::FIRST_MOUSE_BUTTON || flag)
+            if (!tge::io::FIRST_MOUSE_BUTTON || flag)
                 return;
             flag = true;
 
@@ -271,7 +272,7 @@ namespace administration {
         });
 
         ui::boundingBoxFunctions.push_back([](uint32_t id) { 
-            if (!tg_io::FIRST_MOUSE_BUTTON || flag)
+            if (!tge::io::FIRST_MOUSE_BUTTON || flag)
                 return;
             flag = true;
 
@@ -313,7 +314,7 @@ namespace administration {
         });
 
         ui::boundingBoxFunctions.push_back([](uint32_t id) { 
-            if (!tg_io::FIRST_MOUSE_BUTTON || flag)
+            if (!tge::io::FIRST_MOUSE_BUTTON || flag)
                 return;
             flag = true;
 
@@ -329,45 +330,66 @@ namespace administration {
                 const uint32_t size = json.size();
                 materialNames.reserve(size);
                 for (auto& [key, value] : json.items()) {
-                    auto str = key;
-                    materialNames.push_back(str);
+                    materialNames.push_back(key);
                 }
 
                 glm::mat4* transforms = new glm::mat4[size];
 
-                uint32_t selected = 0;
-                uint32_t* implselected = &selected;
+                std::promise<uint32_t> selected;
+                std::future<uint32_t> selectedFuture = selected.get_future();
 
                 const uint32_t startoffset = ui::boundingBoxes.size();
 
+                const tge::fnt::Font* currentFont = tge::fnt::fonts.data();
+
+                auto lambdaList = [&](uint32_t x) {
+                    if (!tge::io::FIRST_MOUSE_BUTTON)
+                        return;
+                    selected.set_value(x);
+                };
+
                 tge::ui::ListInputInfo inputInfo;
                 inputInfo.scalefactor = 0.4f;
-                inputInfo.heightOffset = tge::fnt::homogenHeight(tge::fnt::fonts.data());
+                inputInfo.heightOffset = tge::fnt::homogenHeight(currentFont);
                 inputInfo.startX = 0;
                 inputInfo.width = 0.1f;
                 inputInfo.startY = 0;
                 inputInfo.size = size;
-                ui::createList(&inputInfo, 0.5f, 1, transforms, [=](uint32_t x) { 
-                    if (!tg_io::FIRST_MOUSE_BUTTON)
-                        return;
-                    *implselected = x; 
-                });
-                const uint32_t text = tge::fnt::createStringActor(tge::fnt::fonts.data(), materialNames.data(), materialNames.size(), transforms);
+                ui::createList(&inputInfo, 0.5f, 1, transforms, lambdaList);
+                const uint32_t text = tge::fnt::createStringActor(currentFont, materialNames.data(), materialNames.size(), transforms);
                 executionQueue.push_back(fillCommandBuffer);
-
-                while (selected == 0);
                 
+                selectedFuture.wait();
+
                 ui::deleteBoundingBoxes(startoffset, startoffset + size);
                 tge::fnt::destroyStrings(text);
+                executionQueue.push_back(fillCommandBuffer);
 
-                std::string selection = materialNames[selected - startoffset];
+                std::string selection = materialNames[selectedFuture.get() - startoffset];
 
+                std::promise<std::string> inputpromis;
+                std::future<std::string> inputFuture = inputpromis.get_future();
+
+                auto ontextexit = [&](std::string str) {
+                    inputpromis.set_value(str);
+                };
+
+                ui::TextInputInfo textInputInfo;
+                textInputInfo.x = 0;
+                textInputInfo.y = 0;
+                textInputInfo.z = 0.5f;
+                textInputInfo.scale = 0.6f;
+                textInputInfo.font = currentFont;
+                ui::createTextInput(textInputInfo, ontextexit);
+
+                inputFuture.wait();
+
+                OUT_LV_DEBUG(inputFuture.get())
                 recreateStrings();
+                reset();
             });
 
             materialRead.detach();
-
-            reset();
         });
 
         //Copy
