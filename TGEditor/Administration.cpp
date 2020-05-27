@@ -392,6 +392,26 @@ namespace administration {
                 addCommand.append(actorName);
                 CHECK(shadertool::exec(addCommand.c_str()))
 
+                auto foldername = projectFolderPath;
+                auto jsonfile = foldername.append(actorName.append("_Actor.json"));
+                std::ifstream inputStream(jsonfile);
+                nlohmann::json actorJson;
+                inputStream >> actorJson;
+                inputStream.close();
+
+                std::array<uint32_t, 6> indices;
+                std::array<float, 16> vertices;
+                drw::genQuad(0, 0, 1, 1, 0, 0, 1, 1, vertices.data(), indices.data());
+
+                actorJson["indices"] = nlohmann::json(indices);
+                actorJson["vertices"] = nlohmann::json(vertices);
+                actorJson["indexCount"] = 6;
+                actorJson["vertexCount"] = 4;
+
+                std::ofstream outputStream(jsonfile);
+                outputStream << std::setw(4) << actorJson << std::endl;
+                outputStream.close();
+
                 recreateStrings();
                 reset();
             });
