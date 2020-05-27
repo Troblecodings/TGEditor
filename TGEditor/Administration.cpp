@@ -36,6 +36,7 @@ namespace administration {
 
     static std::string projectPath(RESOURCE_FOLDER);
     static std::string projectFolderPath;
+    static std::string projectName;
     static COLORREF acrCustClr[16];
 
     inline static void reset() {
@@ -111,16 +112,21 @@ namespace administration {
         const uint32_t selectedActor = selection - startOffset;
         currentSelectedActorName = stringsToWrite[selectedActor];
         if (selectedActor < materialOffset) {
-            currentSelectedActorType = ActorType::ACTOR;
+            currentSelectedActorType = ActorType::TEXTURE;
         } else if(selectedActor >= materialOffset && selectedActor < actorOffset) {
             currentSelectedActorType = ActorType::MATERIAL;
         } else {
-            currentSelectedActorType = ActorType::TEXTURE;
+            currentSelectedActorType = ActorType::ACTOR;
         }
     }
 
     inline static void recreateStrings() {
-        std::thread recreationLoad([=]() {
+        std::thread recreationLoad([]() {
+            if (stringActorId != UINT32_MAX) {
+                tge::fnt::destroyStrings(stringActorId);
+                ui::deleteBoundingBoxes(startOffset, endOffset);
+            }
+
             stringsToWrite.clear();
             stringMatrix.clear();
 
@@ -136,29 +142,15 @@ namespace administration {
             stringsToWrite.reserve(reserveSize);
             stringMatrix.resize(reserveSize);
 
-            uint32_t count = 0;
-            for (const auto& actorname : actorNames) {
-                std::string name = actorname.get<std::string>();
-                stringsToWrite.push_back(name);
-                count++;
-            }
-            count = 0;
-            for (const auto& materialname : materialNames) {
-                std::string name = materialname.get<std::string>();
-                stringsToWrite.push_back(name);
-                count++;
-            }
-            count = 0;
-            for (const auto& texturename : textureNames) {
-                std::string name = texturename.get<std::string>();
-                stringsToWrite.push_back(name);
-                count++;
-            }
+            for (const auto& actorname : actorNames)
+                stringsToWrite.push_back(actorname.get<std::string>());
 
-            if (stringActorId != UINT32_MAX) {
-                tge::fnt::destroyStrings(stringActorId);
-                ui::deleteBoundingBoxes(startOffset, endOffset);
-            }
+            for (const auto& materialname : materialNames)
+                stringsToWrite.push_back(materialname.get<std::string>());
+
+            for (const auto& texturename : textureNames)
+                stringsToWrite.push_back(texturename.get<std::string>());
+
             startOffset = ui::boundingBoxes.size();
             endOffset = startOffset + stringsToWrite.size();
 
@@ -171,14 +163,14 @@ namespace administration {
             listInputInfo[2].heightOffset = listInputInfo[1].heightOffset = listInputInfo[0].heightOffset = tge::fnt::homogenHeight(tge::fnt::fonts.data());
             listInputInfo[2].startX = listInputInfo[1].startX = listInputInfo[0].startX = -0.98f;
 
-            listInputInfo[0].startY = -0.75f;
-            listInputInfo[0].size = textureNames.size();
+            listInputInfo[0].startY = 0.6f;
+            listInputInfo[0].size = actorNames.size();
 
             listInputInfo[1].startY = -0.1f;
             listInputInfo[1].size = materialOffset = materialNames.size();
 
-            listInputInfo[2].startY = 0.6f;
-            listInputInfo[2].size = actorNames.size();
+            listInputInfo[2].startY = -0.75f;
+            listInputInfo[2].size = textureNames.size();
             actorOffset = actorNames.size() + materialOffset;
 
             ui::createList(listInputInfo, -0.5, LIST_COUNT, stringMatrix.data(), [=](uint32_t x) {
@@ -209,6 +201,8 @@ namespace administration {
             projectPath = openFileChooser("Json (*.json)\0*.json\0\0", OFN_FILEMUSTEXIST | OFN_PATHMUSTEXIST);
         }
         projectFolderPath = fs::path(projectPath).remove_filename().string();
+        projectName = fs::path(projectPath).filename().string();
+        projectName = projectName.substr(0, projectName.length() - 5);
 
         recreateStrings();
     }
@@ -365,7 +359,7 @@ namespace administration {
                 tge::fnt::destroyStrings(text);
                 executionQueue.push_back(fillCommandBuffer);
 
-                std::string selection = materialNames[selectedFuture.get() - startoffset];
+                std::string materialName = materialNames[selectedFuture.get() - startoffset];
 
                 std::promise<std::string> inputpromis;
                 std::future<std::string> inputFuture = inputpromis.get_future();
@@ -384,7 +378,20 @@ namespace administration {
 
                 inputFuture.wait();
 
-                OUT_LV_DEBUG(inputFuture.get())
+                std::string actorName = inputFuture.get();
+
+                std::string commandString("actor add ");
+                commandString.append(actorName);
+                commandString.append(" ");
+                commandString.append(materialName);
+                int CHECK(shadertool::exec(commandString.c_str()));
+                
+                std::string addCommand("map addactor ");
+                addCommand.append(projectName);
+                addCommand.append(" ");
+                addCommand.append(actorName);
+                CHECK(shadertool::exec(addCommand.c_str()))
+
                 recreateStrings();
                 reset();
             });
