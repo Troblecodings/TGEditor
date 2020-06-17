@@ -36,12 +36,13 @@ namespace administration {
 
     static std::string projectPath(RESOURCE_FOLDER);
     static std::string projectFolderPath;
+    static std::string projectName;
     static COLORREF acrCustClr[16];
 
     inline static void reset() {
         tge::win::mouseHomogeneousX = 0;
         tge::win::mouseHomogeneousY = 0;
-        tg_io::FIRST_MOUSE_BUTTON = false;
+        tge::io::FIRST_MOUSE_BUTTON = false;
         flag = false;
     }
 
@@ -111,16 +112,21 @@ namespace administration {
         const uint32_t selectedActor = selection - startOffset;
         currentSelectedActorName = stringsToWrite[selectedActor];
         if (selectedActor < materialOffset) {
-            currentSelectedActorType = ActorType::ACTOR;
+            currentSelectedActorType = ActorType::TEXTURE;
         } else if(selectedActor >= materialOffset && selectedActor < actorOffset) {
             currentSelectedActorType = ActorType::MATERIAL;
         } else {
-            currentSelectedActorType = ActorType::TEXTURE;
+            currentSelectedActorType = ActorType::ACTOR;
         }
     }
 
     inline static void recreateStrings() {
-        std::thread recreationLoad([=]() {
+        std::thread recreationLoad([]() {
+            if (stringActorId != UINT32_MAX) {
+                tge::fnt::destroyStrings(stringActorId);
+                ui::deleteBoundingBoxes(startOffset, endOffset);
+            }
+
             stringsToWrite.clear();
             stringMatrix.clear();
 
@@ -136,29 +142,15 @@ namespace administration {
             stringsToWrite.reserve(reserveSize);
             stringMatrix.resize(reserveSize);
 
-            uint32_t count = 0;
-            for (const auto& actorname : actorNames) {
-                std::string name = actorname.get<std::string>();
-                stringsToWrite.push_back(name);
-                count++;
-            }
-            count = 0;
-            for (const auto& materialname : materialNames) {
-                std::string name = materialname.get<std::string>();
-                stringsToWrite.push_back(name);
-                count++;
-            }
-            count = 0;
-            for (const auto& texturename : textureNames) {
-                std::string name = texturename.get<std::string>();
-                stringsToWrite.push_back(name);
-                count++;
-            }
+            for (const auto& actorname : actorNames)
+                stringsToWrite.push_back(actorname.get<std::string>());
 
-            if (stringActorId != UINT32_MAX) {
-                tge::fnt::destroyStrings(stringActorId);
-                ui::deleteBoundingBoxes(startOffset, endOffset);
-            }
+            for (const auto& materialname : materialNames)
+                stringsToWrite.push_back(materialname.get<std::string>());
+
+            for (const auto& texturename : textureNames)
+                stringsToWrite.push_back(texturename.get<std::string>());
+
             startOffset = ui::boundingBoxes.size();
             endOffset = startOffset + stringsToWrite.size();
 
@@ -171,18 +163,18 @@ namespace administration {
             listInputInfo[2].heightOffset = listInputInfo[1].heightOffset = listInputInfo[0].heightOffset = tge::fnt::homogenHeight(tge::fnt::fonts.data());
             listInputInfo[2].startX = listInputInfo[1].startX = listInputInfo[0].startX = -0.98f;
 
-            listInputInfo[0].startY = -0.75f;
-            listInputInfo[0].size = textureNames.size();
+            listInputInfo[0].startY = 0.6f;
+            listInputInfo[0].size = actorNames.size();
 
             listInputInfo[1].startY = -0.1f;
             listInputInfo[1].size = materialOffset = materialNames.size();
 
-            listInputInfo[2].startY = 0.6f;
-            listInputInfo[2].size = actorNames.size();
+            listInputInfo[2].startY = -0.75f;
+            listInputInfo[2].size = textureNames.size();
             actorOffset = actorNames.size() + materialOffset;
 
-            ui::createList(listInputInfo, -0.5, LIST_COUNT, stringMatrix.data(), [=] (uint32_t x) {
-                if (!tg_io::FIRST_MOUSE_BUTTON || flag)
+            ui::createList(listInputInfo, -0.5, LIST_COUNT, stringMatrix.data(), [=](uint32_t x) {
+                if (!tge::io::FIRST_MOUSE_BUTTON || flag)
                     return;
                 flag = true;
 
@@ -192,8 +184,9 @@ namespace administration {
             });
 
             stringActorId = tge::fnt::createStringActor(tge::fnt::fonts.data(), stringsToWrite.data(), stringsToWrite.size(), stringMatrix.data());
-
             executionQueue.push_back(fillCommandBuffer);
+
+            while (true);
         });
         recreationLoad.detach();
     }
@@ -208,6 +201,8 @@ namespace administration {
             projectPath = openFileChooser("Json (*.json)\0*.json\0\0", OFN_FILEMUSTEXIST | OFN_PATHMUSTEXIST);
         }
         projectFolderPath = fs::path(projectPath).remove_filename().string();
+        projectName = fs::path(projectPath).filename().string();
+        projectName = projectName.substr(0, projectName.length() - 5);
 
         recreateStrings();
     }
@@ -237,7 +232,7 @@ namespace administration {
 
         // Add
         ui::boundingBoxFunctions.push_back([](uint32_t id) {
-            if (!tg_io::FIRST_MOUSE_BUTTON || flag)
+            if (!tge::io::FIRST_MOUSE_BUTTON || flag)
                 return;
             flag = true;
 
@@ -271,7 +266,7 @@ namespace administration {
         });
 
         ui::boundingBoxFunctions.push_back([](uint32_t id) { 
-            if (!tg_io::FIRST_MOUSE_BUTTON || flag)
+            if (!tge::io::FIRST_MOUSE_BUTTON || flag)
                 return;
             flag = true;
 
@@ -313,7 +308,7 @@ namespace administration {
         });
 
         ui::boundingBoxFunctions.push_back([](uint32_t id) { 
-            if (!tg_io::FIRST_MOUSE_BUTTON || flag)
+            if (!tge::io::FIRST_MOUSE_BUTTON || flag)
                 return;
             flag = true;
 
@@ -329,45 +324,99 @@ namespace administration {
                 const uint32_t size = json.size();
                 materialNames.reserve(size);
                 for (auto& [key, value] : json.items()) {
-                    auto str = key;
-                    materialNames.push_back(str);
+                    materialNames.push_back(key);
                 }
 
                 glm::mat4* transforms = new glm::mat4[size];
 
-                uint32_t selected = 0;
-                uint32_t* implselected = &selected;
+                std::promise<uint32_t> selected;
+                std::future<uint32_t> selectedFuture = selected.get_future();
 
                 const uint32_t startoffset = ui::boundingBoxes.size();
 
+                const tge::fnt::Font* currentFont = tge::fnt::fonts.data();
+
+                auto lambdaList = [&](uint32_t x) {
+                    if (!tge::io::FIRST_MOUSE_BUTTON)
+                        return;
+                    selected.set_value(x);
+                };
+
                 tge::ui::ListInputInfo inputInfo;
                 inputInfo.scalefactor = 0.4f;
-                inputInfo.heightOffset = tge::fnt::homogenHeight(tge::fnt::fonts.data());
+                inputInfo.heightOffset = tge::fnt::homogenHeight(currentFont);
                 inputInfo.startX = 0;
                 inputInfo.width = 0.1f;
                 inputInfo.startY = 0;
                 inputInfo.size = size;
-                ui::createList(&inputInfo, 0.5f, 1, transforms, [=](uint32_t x) { 
-                    if (!tg_io::FIRST_MOUSE_BUTTON)
-                        return;
-                    *implselected = x; 
-                });
-                const uint32_t text = tge::fnt::createStringActor(tge::fnt::fonts.data(), materialNames.data(), materialNames.size(), transforms);
+                ui::createList(&inputInfo, 0.5f, 1, transforms, lambdaList);
+                const uint32_t text = tge::fnt::createStringActor(currentFont, materialNames.data(), materialNames.size(), transforms);
                 executionQueue.push_back(fillCommandBuffer);
-
-                while (selected == 0);
                 
+                selectedFuture.wait();
+
                 ui::deleteBoundingBoxes(startoffset, startoffset + size);
                 tge::fnt::destroyStrings(text);
+                executionQueue.push_back(fillCommandBuffer);
 
-                std::string selection = materialNames[selected - startoffset];
+                std::string materialName = materialNames[selectedFuture.get() - startoffset];
+
+                std::promise<std::string> inputpromis;
+                std::future<std::string> inputFuture = inputpromis.get_future();
+
+                auto ontextexit = [&](std::string str) {
+                    inputpromis.set_value(str);
+                };
+
+                ui::TextInputInfo textInputInfo;
+                textInputInfo.x = 0;
+                textInputInfo.y = 0;
+                textInputInfo.z = 0.5f;
+                textInputInfo.scale = 0.6f;
+                textInputInfo.font = currentFont;
+                ui::createTextInput(textInputInfo, ontextexit);
+
+                inputFuture.wait();
+
+                std::string actorName = inputFuture.get();
+
+                std::string commandString("actor add ");
+                commandString.append(actorName);
+                commandString.append(" ");
+                commandString.append(materialName);
+                int CHECK(shadertool::exec(commandString.c_str()));
+                
+                std::string addCommand("map addactor ");
+                addCommand.append(projectName);
+                addCommand.append(" ");
+                addCommand.append(actorName);
+                CHECK(shadertool::exec(addCommand.c_str()))
+
+                auto foldername = projectFolderPath;
+                auto jsonfile = foldername.append(actorName.append("_Actor.json"));
+                std::ifstream inputStream(jsonfile);
+                nlohmann::json actorJson;
+                inputStream >> actorJson;
+                inputStream.close();
+
+                std::array<uint32_t, 6> indices;
+                std::array<float, 16> vertices;
+                drw::genQuad(0, 0, 1, 1, 0, 0, 1, 1, vertices.data(), indices.data());
+
+                actorJson["indices"] = nlohmann::json(indices);
+                actorJson["vertices"] = nlohmann::json(vertices);
+                actorJson["indexCount"] = 6;
+                actorJson["vertexCount"] = 4;
+
+                std::ofstream outputStream(jsonfile);
+                outputStream << std::setw(4) << actorJson << std::endl;
+                outputStream.close();
 
                 recreateStrings();
+                reset();
             });
 
             materialRead.detach();
-
-            reset();
         });
 
         //Copy
