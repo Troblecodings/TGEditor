@@ -142,6 +142,9 @@ namespace administration {
             stringsToWrite.reserve(reserveSize);
             stringMatrix.resize(reserveSize);
 
+            if (!reserveSize)
+                return;
+
             for (const auto& actorname : actorNames)
                 stringsToWrite.push_back(actorname.get<std::string>());
 
