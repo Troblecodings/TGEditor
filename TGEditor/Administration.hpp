@@ -3,6 +3,7 @@
 #include <array>
 #include <atomic>
 #include <vector>
+#include <string>
 
 namespace administration {
 
